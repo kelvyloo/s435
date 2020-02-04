@@ -1,10 +1,10 @@
 %% Assignment 1
 % Kelvin Lu
-%
 % Devin Kolarac
 %
+
 close all; clear; clc
-try_diff_gammas = 0;
+try_diff_gammas = 1;
 
 %% Part 1
 pout = imread('pout.tif');
@@ -39,33 +39,47 @@ imhist(poutv2)
 legend("Gamma = 0.5", "Gamma = 2.0");
 hold off
 
+%%
+
 % Trying different gammas
 gammas = [0.25, 0.75, 1.0, 1.25, 1.5, 1.75];
 
+moonPhobos = imread('MoonPhobos.tif');
 if try_diff_gammas
     for i = 1:length(gammas)
-        new_pout = gamma_correction(double(pout), gammas(i));
-        new_pout = uint8(new_pout);
+        new_moonPhobos = gamma_correction(double(moonPhobos), gammas(i));
+        new_moonPhobos = uint8(new_moonPhobos);
 
         figure
-        imshow(new_pout);
-        title(["Pout.tif \gamma = ", gammas(i)]);
+        imshow(new_moonPhobos);
+        title(["MoonPhobos.tif \gamma = ", gammas(i)]);
     end
+    figure
+    for i = 1:length(gammas)
+        new_moonPhobos = gamma_correction(double(moonPhobos), gammas(i));
+        new_moonPhobos = uint8(new_moonPhobos);
+        imhist(new_moonPhobos)
+        hold on
+    end
+    title("MoonPhobos.tif pixel histogram");
+    xlabel("Bin")
+    ylabel("Frequency")
+    hold off
 end
-
+%%
 % Histogram Equalization
-eq_pout = histeq(pout);
+eq_moonPhobos = histeq(moonPhobos);
 
 figure
-imshow(eq_pout);
-title("Pout.tif hist equalized");
+imshow(eq_moonPhobos);
+title("MoonPhobos.tif hist equalized");
 
 figure
 hold on
-title("Pout.tif pixel histogram after equalization");
+title("MoonPhobos.tif pixel histogram after equalization");
 xlabel("Bin")
 ylabel("Frequency")
-imhist(eq_pout);
+imhist(eq_moonPhobos);
 hold off
 
 %% Part 2
