@@ -45,7 +45,7 @@ end
 for i = 1:2
  cell{i} = [8*ones(1,64), []];
 end
-pixelBlocks = mat2cell(dct(double(imBaboon)),cell{:});
+pixelBlocks = mat2cell(double(imBaboon)),cell{:});
 %   2. Compute the DCT of each block.
 pixelBlocksDct = mat2cell(dct(double(imBaboon)),cell{:});
 %   3. Quantize these DCT coefficients using a user specified quantization table Q
