@@ -11,41 +11,97 @@ imBaboon= imread('baboon.tif');
 
 % For each quality factor...
 qFactors = [90 70 50 30 10];
+psnrs = zeros(2, length(qFactors));
+filesizes = zeros(2, length(qFactors));
+
+figure(1)
+hold on
+grid on
+title('Peppers Filesize & PSNR vs Q Factor');
+ylabel('Filesize (Bytes)');
+xlabel('PSNR');
+
+figure(2)
+hold on
+grid on
+title('Baboon Filesize & PSNR vs Q Factor');
+ylabel('Filesize (Bytes)');
+xlabel('PSNR');
+
 for i = 1 : length(qFactors)
-    fprintf('Quality factor of %d:\n', qFactors(i));
     % Save current peppers image with the ith quality factor
     imwrite(imPeppers, strcat('peppers',int2str(qFactors(i)),'.jpg'),'Quality',qFactors(i));
+    
     % Get the image and calculate its PSNR
     jpgPeppers = imread(strcat('peppers',int2str(qFactors(i)),'.jpg'));
-    fprintf('Peppers PSNR is %d.\n',round(psnr(jpgPeppers,imPeppers)));
+    psnrs(1, i) = round(psnr(jpgPeppers, imPeppers));
+    
     % Get the image's size
     imDir = dir(strcat('peppers',int2str(qFactors(i)),'.jpg'));
-    fprintf('Peppers filesize is %d bytes.\n',imDir.bytes);
+    filesizes(1, i) = imDir.bytes;
+    
+    % Show image
+    figure
+    imshow(uint8(jpgPeppers));
+    
+    % Plot PSNR and Filesize
+    figure(1)
+    scatter(psnrs(1, i), filesizes(1, i));
 
     % Save current baboon image with the ith quality factor
     imwrite(imBaboon, strcat('baboon',int2str(qFactors(i)),'.jpg'),'Quality',qFactors(i));
+    
     % Get the image and calculate its PSNR
     jpgBaboon = imread(strcat('baboon',int2str(qFactors(i)),'.jpg'));
-    fprintf('Baboon PSNR is %d.\n',round(psnr(jpgBaboon,imBaboon)));
+    psnrs(2, i) = round(psnr(jpgBaboon,imBaboon));
+    
     % Get the image's size
     imDir = dir(strcat('baboon',int2str(qFactors(i)),'.jpg'));
-    fprintf('Baboon filesize is %d bytes.\n',imDir.bytes);
-
-    fprintf('\n');
+    filesizes(2, i) = imDir.bytes;
+    
+    % Plot PSNR and filesize
+    figure(2)
+    scatter(psnrs(2, i), filesizes(1, i));
+    
+    % Show image
+    figure
+    imshow(uint8(jpgBaboon));
 end
 
-% QUESTIONS
-% What is the relationship between the imageâ€™s file size and its quality?
-% What distortions are introduced by JPEG compression? Why do you think they occur?
-% At what quality factor do these distortions become unacceptably strong?
+figure(1)
+legend(string(qFactors), 'Location', 'southeast');
+hold off
+
+figure(2)
+legend(string(qFactors), 'Location', 'southeast');
+hold off
+
+%% PART 1 QUESTIONS
+% *What is the relationship between the image’s file size and its quality?*
+%
+% The images' file size and quality are directly proportional. As the
+% quality of the image increases, so does the file size and vice versa.
+%
+% *What distortions are introduced by JPEG compression? Why do you think
+% they occur?*
+%
+% JPEG compression reduces the bit depth of each pixel. This is due to the
+% fact that as its decoded, depending on the quality factor, more
+% information will be lost so as the quality factor decreases the bit depth
+% per pixel will decrease.
+%
+% *At what quality factor do these distortions become unacceptably strong?*
+%
+% Quality factor 10 - the images have very noticeable pixelation and
+% contouring that occurs which are not in the higher quality images.
 
 %% Part II
 % Implement an encoder/decoder
-%   1. Segment the image into 8 Ã— 8 pixel blocks.
+%   1. Segment the image into 8 × 8 pixel blocks.
 for i = 1:2
- cell{i} = [8*ones(1,64), []];
+    cell{i} = [8*ones(1,64), []];
 end
-pixelBlocks = mat2cell(double(imBaboon)),cell{:});
+pixelBlocks = mat2cell(double(imBaboon), cell{:});
 %   2. Compute the DCT of each block.
 pixelBlocksDct = mat2cell(dct(double(imBaboon)),cell{:});
 %   3. Quantize these DCT coefficients using a user specified quantization table Q
