@@ -77,7 +77,7 @@ legend(string(qFactors), 'Location', 'southeast');
 hold off
 
 %% PART 1 QUESTIONS
-% *What is the relationship between the image’s file size and its quality?*
+% *What is the relationship between the imageâ€™s file size and its quality?*
 %
 % The images' file size and quality are directly proportional. As the
 % quality of the image increases, so does the file size and vice versa.
@@ -97,18 +97,22 @@ hold off
 
 %% Part II
 % Implement an encoder/decoder
-%   1. Segment the image into 8 × 8 pixel blocks.
+I = im2double(imBaboon);
+%   1. Segment the image into 8 Ã— 8 pixel blocks.
 for i = 1:2
     cell{i} = [8*ones(1,64), []];
 end
-pixelBlocks = mat2cell(double(imBaboon), cell{:});
+pixelBlocks = mat2cell(I, cell{:});
 %   2. Compute the DCT of each block.
-pixelBlocksDct = mat2cell(dct(double(imBaboon)),cell{:});
+pixelBlocksDct = mat2cell(dct2(I),cell{:});
 %   3. Quantize these DCT coefficients using a user specified quantization table Q
 %   4. Reorder each block of quantized DCT coefficients into a one-dimensional sequence using
 %      zig-zag scanning. You can use ZigzagMtx2Vector.m that is provided to you to perform
 %      zig-zag scanning and use Vector2ZigzagMtx.m for reconstructing the matrix from a zig-zag
 %      scanned sequence.
+pixelVector = cell2mat(pixelBlocksDct)';
+pixelVector = pixelVector(:)';
+zigzagPixels = Vector2ZigzagMtx(pixelVector);
 %   5. Encode the resulting sequence. For Entropy Encoding, use the JPEG entropy encode.m
 %      module provided. This function will read a matrix, in which each row represents a
 %      vectorized DCT block, write a bit stream whose filename is always named as JPEG.jpg,
