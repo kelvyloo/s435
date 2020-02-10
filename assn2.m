@@ -96,30 +96,57 @@ hold off
 % contouring that occurs which are not in the higher quality images.
 
 %% Part II
-% Implement an encoder/decoder
-I = im2double(imBaboon);
-%   1. Segment the image into 8 × 8 pixel blocks.
-for i = 1:2
-    cell{i} = [8*ones(1,64), []];
-end
-pixelBlocks = mat2cell(I, cell{:});
-%   2. Compute the DCT of each block.
-pixelBlocksDct = mat2cell(dct2(I),cell{:});
-%   3. Quantize these DCT coefficients using a user specified quantization table Q
-%   4. Reorder each block of quantized DCT coefficients into a one-dimensional sequence using
-%      zig-zag scanning. You can use ZigzagMtx2Vector.m that is provided to you to perform
-%      zig-zag scanning and use Vector2ZigzagMtx.m for reconstructing the matrix from a zig-zag
-%      scanned sequence.
-pixelVector = cell2mat(pixelBlocksDct)';
-pixelVector = pixelVector(:)';
-zigzagPixels = Vector2ZigzagMtx(pixelVector);
-%   5. Encode the resulting sequence. For Entropy Encoding, use the JPEG entropy encode.m
-%      module provided. This function will read a matrix, in which each row represents a
-%      vectorized DCT block, write a bit stream whose filename is always named as JPEG.jpg,
-%      and return the length of this file. JPEG entropy encode.m is an interface for generating
-%      a text file, JPEG DCTQ ZZ.txt, and running jpeg entropy encode.exe. For the entropy
-%      decoding, use JPEG entropy decode.m, which performs the inverse functionality.
-% The decoder should reconstruct the image by performing each of these steps in reverse
+% Load desired image as double
+im_in = double(imread('baboon.tif'));
+
+% 8x8 discrete cosine transform matrix for loaded image
+D = dctmtx(8);
+
+% Block sizes
+S = [8 8];
+
+% Image dimensions
+[rowN, colN]= size(im_in);
+
+% Compute the DCT of the image in pixel blocks of 8x8
+dct = @(block)D * block.data * D';
+pixelBlock = blockproc(im_in, S, dct);
+
+% User specified quantization table
+Q = [ 
+     16 11 10 16 24 40 51 61;
+     12 12 14 19 26 58 60 55;
+     14 13 16 24 40 57 69 56;
+     14 17 22 29 51 87 80 62; 
+     18 22 37 56 68 109 103 77;
+     24 35 55 64 81 104 113 92;
+     49 64 78 87 103 121 120 101;
+     72 92 95 98 112 100 103 99
+    ];
+
+% Quantize image with DCT coefficients
+quant = @(block)(block.data) ./ Q;
+pixelBlockQuant = round(blockproc(pixelBlock, S, quant));
+
+% Reorder each block of quantized DCT coefficients
+% pixelZigzag = Vector2ZigzagMtx(pixelBlockQuant(:));
+% pixelEntropy = JPEG_entropy_encode(rowN,colN,64,Q,pixelZigzag)
+
+% Dequantize image with DCT coefficients
+dequant = @(block) Q .* block.data;
+pixelBlockDequant = blockproc(pixelBlockQuant, S, dequant);
+
+% Compute the inverse DCT of the image
+invdct = @(block) round(D' * block.data * D);
+im_out = blockproc(pixelBlockDequant, S, invdct);
+
+% Show images
+figure();
+imshow(uint8(im_in));
+title('Original image');
+figure();
+imshow(uint8(im_out));
+title('Dequantized image');
 
 %% Part III
 luminanceMatrix = [
