@@ -96,21 +96,8 @@ hold off
 % contouring that occurs which are not in the higher quality images.
 
 %% Part II
-% Load desired image as double
-im_in = double(imread('baboon.tif'));
-
-% 8x8 discrete cosine transform matrix for loaded image
-D = dctmtx(8);
-
-% Block sizes
-S = [8 8];
-
-% Image dimensions
-[rowN, colN]= size(im_in);
-
-% Compute the DCT of the image in pixel blocks of 8x8
-dct = @(block)D * block.data * D';
-pixelBlock = blockproc(im_in, S, dct);
+% Load desired image
+im_in = imread('baboon.tif');
 
 % User specified quantization table
 Q = [ 
@@ -124,31 +111,27 @@ Q = [
      72 92 95 98 112 100 103 99
     ];
 
-% Quantize image with DCT coefficients
-quant = @(block)(block.data) ./ Q;
-pixelBlockQuant = round(blockproc(pixelBlock, S, quant));
-
-% Reorder each block of quantized DCT coefficients
-% pixelZigzag = Vector2ZigzagMtx(pixelBlockQuant(:));
-% pixelEntropy = JPEG_entropy_encode(rowN,colN,64,Q,pixelZigzag)
+% Run implemented encoder
+[len, im] = diyEncoder(im_in, Q);
 
 % Dequantize image with DCT coefficients
 dequant = @(block) Q .* block.data;
-pixelBlockDequant = blockproc(pixelBlockQuant, S, dequant);
+im = blockproc(im, size(Q), dequant);
 
 % Compute the inverse DCT of the image
-invdct = @(block) round(D' * block.data * D);
-im_out = blockproc(pixelBlockDequant, S, invdct);
+invdct = @(block) idct2(block.data);
+im = blockproc(im, size(Q), invdct);
 
 % Show images
 figure();
 imshow(uint8(im_in));
 title('Original image');
 figure();
-imshow(uint8(im_out));
+imshow(uint8(im));
 title('Dequantized image');
 
-%% Part III
+%% Part IIIA
+% Standard liminance quantization matrix
 luminanceMatrix = [
     [16 11 10 16 24 40 51 61]
     [12 12 14 19 26 58 60 55]
@@ -160,6 +143,66 @@ luminanceMatrix = [
     [72 92 95 98 112 100 103 99]
 ];
 
-% Encode peppers.tif with the encoder and record the image's size and PSNR
-% change. Next, change the table and encode the image. Is it possible to 
-% achieve both a lower file size and a higher PSNR? 
+% Load desired image
+imPeppers = imread('peppers.tif');
+
+% Run implemented encoder
+[len, im] = diyEncoder(imPeppers, luminanceMatrix);
+
+% Dequantize image with DCT coefficients
+dequant = @(block) luminanceMatrix .* block.data;
+im = blockproc(im, size(luminanceMatrix), dequant);
+
+% Compute the inverse DCT of the image
+invdct = @(block) idct2(block.data);
+im = blockproc(im, size(luminanceMatrix), invdct);
+
+im = uint8(im);
+psnr(im, imPeppers)
+
+imPeppersDir = dir('peppers.tif');
+imPeppersSize = imPeppersDir.bytes
+
+imwrite(im,'peppers.jpg');
+imDir = dir('peppers.jpg');
+imSize = imDir.bytes
+
+%% Part IIIB
+luminanceMatrix = [
+    [16 11 10 16 24 40 51 61]
+    [12 12 14 19 26 58 60 55]
+    [14 13 16 24 40 57 69 56]
+    [14 17 22 29 51 87 80 62]
+    [18 22 37 56 68 109 103 77]
+    [24 35 55 64 81 104 113 92]
+    [49 64 78 87 103 121 120 101]
+    [72 92 95 98 112 100 103 99]
+];
+
+luminanceMatrix = round(luminanceMatrix*0.9);
+
+% Load desired image
+imPeppers = imread('peppers.tif');
+
+% Run implemented encoder
+[len, im] = diyEncoder(imPeppers, luminanceMatrix);
+
+% Dequantize image with DCT coefficients
+dequant = @(block) luminanceMatrix .* block.data;
+im = blockproc(im, size(luminanceMatrix), dequant);
+
+% Compute the inverse DCT of the image
+invdct = @(block) idct2(block.data);
+im = blockproc(im, size(luminanceMatrix), invdct);
+
+im = uint8(im);
+psnr(im, imPeppers)
+
+imPeppersDir = dir('peppers.tif');
+imPeppersSize = imPeppersDir.bytes
+
+imwrite(im,'peppersMod.jpg');
+imDir = dir('peppersMod.jpg');
+imSize = imDir.bytes
+%% PART 2 QUESTIONS
+% *Is it possible to achieve both a lower file size and a higher PSNR?*
