@@ -77,7 +77,7 @@ legend(string(qFactors), 'Location', 'southeast');
 hold off
 
 %% PART 1 QUESTIONS
-% *What is the relationship between the imageâ€™s file size and its quality?*
+% *What is the relationship between the image’s file size and its quality?*
 %
 % The images' file size and quality are directly proportional. As the
 % quality of the image increases, so does the file size and vice versa.
@@ -114,13 +114,16 @@ Q = [
 % Run implemented encoder
 [len, im] = diyEncoder(im_in, Q);
 
-% Dequantize image with DCT coefficients
-dequant = @(block) Q .* block.data;
-im = blockproc(im, size(Q), dequant);
+% Run implemented decoder
+im = diyDecoder(im, Q);
 
-% Compute the inverse DCT of the image
-invdct = @(block) idct2(block.data);
-im = blockproc(im, size(Q), invdct);
+% % Dequantize image with DCT coefficients
+% dequant = @(block) Q .* block.data;
+% im = blockproc(im, size(Q), dequant);
+% 
+% % Compute the inverse DCT of the image
+% invdct = @(block) idct2(block.data);
+% im = blockproc(im, size(Q), invdct);
 
 % Show images
 figure();
@@ -133,14 +136,14 @@ title('Dequantized image');
 %% Part IIIA
 % Standard liminance quantization matrix
 luminanceMatrix = [
-    [16 11 10 16 24 40 51 61]
-    [12 12 14 19 26 58 60 55]
-    [14 13 16 24 40 57 69 56]
-    [14 17 22 29 51 87 80 62]
-    [18 22 37 56 68 109 103 77]
-    [24 35 55 64 81 104 113 92]
+    [16 11 10 16 24  40  51  61 ]
+    [12 12 14 19 26  58  60  55 ]
+    [14 13 16 24 40  57  69  56 ]
+    [14 17 22 29 51  87  80  62 ]
+    [18 22 37 56 68  109 103 77 ]
+    [24 35 55 64 81  104 113 92 ]
     [49 64 78 87 103 121 120 101]
-    [72 92 95 98 112 100 103 99]
+    [72 92 95 98 112 100 103 99 ]
 ];
 
 % Load desired image
@@ -149,16 +152,10 @@ imPeppers = imread('peppers.tif');
 % Run implemented encoder
 [len, im] = diyEncoder(imPeppers, luminanceMatrix);
 
-% Dequantize image with DCT coefficients
-dequant = @(block) luminanceMatrix .* block.data;
-im = blockproc(im, size(luminanceMatrix), dequant);
-
-% Compute the inverse DCT of the image
-invdct = @(block) idct2(block.data);
-im = blockproc(im, size(luminanceMatrix), invdct);
+im = diyDecoder(im, luminanceMatrix);
 
 im = uint8(im);
-psnr(im, imPeppers)
+im_psnr = psnr(im, imPeppers)
 
 imPeppersDir = dir('peppers.tif');
 imPeppersSize = imPeppersDir.bytes
@@ -168,35 +165,23 @@ imDir = dir('peppers.jpg');
 imSize = imDir.bytes
 
 %% Part IIIB
-luminanceMatrix = [
-    [16 11 10 16 24 40 51 61]
-    [12 12 14 19 26 58 60 55]
-    [14 13 16 24 40 57 69 56]
-    [14 17 22 29 51 87 80 62]
-    [18 22 37 56 68 109 103 77]
-    [24 35 55 64 81 104 113 92]
-    [49 64 78 87 103 121 120 101]
-    [72 92 95 98 112 100 103 99]
-];
-
-luminanceMatrix = round(luminanceMatrix*0.9);
+qFactor = 100
+luminanceMatrix = qMatGenerator(qFactor)
 
 % Load desired image
 imPeppers = imread('peppers.tif');
+figure
+imshow(imPeppers);
 
 % Run implemented encoder
 [len, im] = diyEncoder(imPeppers, luminanceMatrix);
 
-% Dequantize image with DCT coefficients
-dequant = @(block) luminanceMatrix .* block.data;
-im = blockproc(im, size(luminanceMatrix), dequant);
-
-% Compute the inverse DCT of the image
-invdct = @(block) idct2(block.data);
-im = blockproc(im, size(luminanceMatrix), invdct);
+im = diyDecoder(im, luminanceMatrix);
 
 im = uint8(im);
-psnr(im, imPeppers)
+figure
+imshow(im);
+im_psnr = psnr(im, imPeppers)
 
 imPeppersDir = dir('peppers.tif');
 imPeppersSize = imPeppersDir.bytes
@@ -204,5 +189,5 @@ imPeppersSize = imPeppersDir.bytes
 imwrite(im,'peppersMod.jpg');
 imDir = dir('peppersMod.jpg');
 imSize = imDir.bytes
-%% PART 2 QUESTIONS
+%% PART 3 QUESTIONS
 % *Is it possible to achieve both a lower file size and a higher PSNR?*
