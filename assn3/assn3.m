@@ -79,6 +79,7 @@ end
 
 %% Part 2 Yeung-Mintzer Watermarking
 seed = 435;
+ymwmked435 = imread("YMwmkedKey435.tiff");
 
 %% Part 2.1
 barb_watermark = getBitPlane(barbara, 7);
@@ -120,3 +121,33 @@ imshow(watermark2);
 title("Watermark from Baboon decoded using Yeung-Mintzer");
 
 %% Part 2.3
+wmk435 = yeungMintzer_decode(ymwmked435, seed);
+
+figure
+imshow(wmk435);
+title("Watermark from YMwmkedKey435.tiff")
+
+%% Part 2.4
+[r, c] = size(bab_and_barb);
+
+half_pep_bab_lsb = [bab_and_barb(1:r/2, :); pep_and_barb(r/2:r, :)];
+half_pep_bab_ym = [bab_and_barb_ym(1:r/2, :); pep_and_barb_ym(r/2:r, :)];
+
+figure
+imshow(half_pep_bab_lsb);
+title("LSB watermark attack image");
+
+figure
+imshow(half_pep_bab_ym);
+title("Yeung-Mintzer watermark attack image");
+
+half_pep_bab_lsb_wm = getBitPlane(half_pep_bab_lsb, 0);
+half_pep_bab_ym_wm = yeungMintzer_decode(half_pep_bab_ym, seed);
+
+figure
+imshow(half_pep_bab_lsb_wm);
+title("Watermark after attack on LSB embedded images");
+
+figure
+imshow(half_pep_bab_ym_wm);
+title("Watermark after attack on Yeung-Mintzer embedded images");
