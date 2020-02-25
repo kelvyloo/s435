@@ -87,6 +87,14 @@ barb_watermark = getBitPlane(barbara, 7);
 pep_and_barb_ym = yeungMintzer_encode(peppers, barb_watermark, seed);
 bab_and_barb_ym = yeungMintzer_encode(baboon, barb_watermark, seed);
 
+figure
+imshow(pep_and_barb_ym);
+title("Watermarked Peppers using Yeung-Mintzer");
+
+figure
+imshow(bab_and_barb_ym);
+title("Watermarked Baboon using Yeung-Mintzer");
+
 ym_pep_wm = getBitPlane(pep_and_barb_ym, 0);
 ym_bab_wm = getBitPlane(bab_and_barb_ym, 0);
 
@@ -122,6 +130,15 @@ title("Watermark from Baboon decoded using Yeung-Mintzer");
 
 %% Part 2.3
 wmk435 = yeungMintzer_decode(ymwmked435, seed);
+wmk435_lsb = getBitPlane(ymwmked435, 0);
+
+figure
+imshow(ymwmked435);
+title("Original YMwmkedKey435.tiff");
+
+figure
+imshow(wmk435_lsb);
+title("LSB plane from YMwmkedKey435.tiff");
 
 figure
 imshow(wmk435);
@@ -130,8 +147,8 @@ title("Watermark from YMwmkedKey435.tiff")
 %% Part 2.4
 [r, c] = size(bab_and_barb);
 
-half_pep_bab_lsb = [bab_and_barb(1:r/2, :); pep_and_barb(r/2:r, :)];
-half_pep_bab_ym = [bab_and_barb_ym(1:r/2, :); pep_and_barb_ym(r/2:r, :)];
+half_pep_bab_lsb = [pep_and_barb(r/2+1:r, :); bab_and_barb(r/2+1:r, :)];
+half_pep_bab_ym = [pep_and_barb_ym(r/2+1:r, :); bab_and_barb_ym(r/2+1:r, :)];
 
 figure
 imshow(half_pep_bab_lsb);
@@ -146,8 +163,20 @@ half_pep_bab_ym_wm = yeungMintzer_decode(half_pep_bab_ym, seed);
 
 figure
 imshow(half_pep_bab_lsb_wm);
-title("Watermark after attack on LSB embedded images");
+title("Watermark after attack on LSB embedded image");
 
 figure
 imshow(half_pep_bab_ym_wm);
-title("Watermark after attack on Yeung-Mintzer embedded images");
+title("Watermark after attack on Yeung-Mintzer embedded image");
+
+%% Devised attack to preserve watermark on LSB embedded image
+half_pep_bab_lsb = mergeNBitPlanes(half_pep_bab_lsb, barbara, 0);
+half_pep_bab_lsb_wm = getBitPlane(half_pep_bab_lsb, 0);
+
+figure
+imshow(half_pep_bab_lsb);
+title("Tampered Peppers and Baboon image");
+
+figure
+imshow(half_pep_bab_lsb_wm);
+title("Tampered Peppers and Baboon watermark");

@@ -15,13 +15,18 @@ end
 
 rng(key);
 img = uint8(img);
-watermark = logical(watermark);
-
+watermark = watermark./max(watermark);
 LUTvals = rand(1, 256) > 0.5;
-marked = LUTvals(img + 1);
 
-watermarked_img = bitset(img, 1, marked == watermark);
-watermarked_img = uint8(watermarked_img);
+for i = 1:r1
+    for j = 1:c2
+        while LUTvals(img(i, j) + 1) ~= watermark(i, j)
+            img(i, j) = img(i, j) + 1;
+        end
+    end
+end
+
+watermarked_img = img;
 
 end
 

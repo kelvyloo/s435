@@ -3,8 +3,9 @@ function bitPlane = getBitPlane(img, bitPlaneIndex)
 %
 % img           - imread image
 % bitPlaneIndex - index of bit plane user wants from 0 (LSB) to 7 (MSB)
-
+%
 % Convert img to uint8 then AND with bitmask then shift
+%
 img = uint8(img);
 
 bitMask = bitshift(1, bitPlaneIndex);
@@ -13,4 +14,3 @@ bitPlane = bitshift(bitPlane, 7-bitPlaneIndex);
 bitPlane = uint8(bitPlane);
 
 end
-
