@@ -3,6 +3,7 @@
 %
 % Devin Kolarac
 close all, clear, clc;
+
 %% Part 1: Detecting Image Contrast Enhancement
 
 for i = 1:5
@@ -38,3 +39,20 @@ for i = 1:length(gamma)
 end
 
 %% Part 2: Detecting Image Resampling and Resizing
+
+for i = 1:4
+    img_name = sprintf("resamp%d.tif", i);
+    img = imread(img_name);
+    p_map = kirchners(double(img), 1, 2, 1);
+    
+    figure
+    hold on
+    title([img_name, "P-map"]);
+    imagesc(p_map);
+    hold off
+    
+    figure
+    hold on
+    showFreqPmap(p_map)
+    hold off
+end
